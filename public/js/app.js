@@ -56772,12 +56772,14 @@ var app = new vue__WEBPACK_IMPORTED_MODULE_1___default.a({
       time: []
     },
     typing: "",
+    name: "",
     numberOfUsers: 0
   },
   watch: {
     message: function message() {
       Echo["private"]('chat').whisper('typing', {
-        name: this.message
+        message: this.message //name: this.name
+
       });
     }
   },
@@ -56788,11 +56790,19 @@ var app = new vue__WEBPACK_IMPORTED_MODULE_1___default.a({
         this.chat.user.push('you');
         this.chat.color.push('success');
         this.chat.time.push(this.getTime());
-        axios.post('/send', {
-          message: this.message
+        axios.post('/saveToSession', {
+          chat: this.chat
         }).then(function (response) {
           console.log(response);
-          console.log('send success');
+          console.log('session save');
+        })["catch"](function (error) {
+          console.log(error);
+        });
+        axios.post('/send', {
+          message: this.message,
+          chat: this.chat
+        }).then(function (response) {// console.log(response);
+          // console.log('send success');
         })["catch"](function (error) {
           console.log(error);
         });
@@ -56803,42 +56813,79 @@ var app = new vue__WEBPACK_IMPORTED_MODULE_1___default.a({
     getTime: function getTime() {
       var time = new Date();
       return time.getHours() + ':' + time.getMinutes();
+    },
+    getOldMessages: function getOldMessages() {
+      var _this = this;
+
+      axios.post('/getOldMessage').then(function (response) {
+        if (response.data != '') {
+          _this.chat = response.data;
+        }
+      })["catch"](function (error) {
+        console.log(error);
+      });
+    },
+    deleteSession: function deleteSession() {
+      var _this2 = this;
+
+      axios.post('/deleteSession').then(function (response) {
+        _this2.$toaster.success("Chat history is deleted.");
+
+        _this2.chat = "";
+      });
     }
   },
   mounted: function mounted() {
-    var _this = this;
+    var _this3 = this;
 
+    // axios.get('/user')
+    // .then(response => {
+    //     this.name = response.data;
+    //     //console.log(response.data);
+    // })
+    // .catch(error => {
+    //     console.log(error);
+    // });
+    this.getOldMessages();
     Echo["private"]('chat').listen('ChatEvent', function (e) {
-      _this.chat.message.push(e.message);
+      _this3.chat.message.push(e.message);
 
-      _this.chat.user.push(e.user);
+      _this3.chat.user.push(e.user);
 
-      _this.chat.color.push('warning');
+      _this3.chat.color.push('warning');
 
-      _this.chat.time.push(_this.getTime());
+      _this3.chat.time.push(_this3.getTime());
 
-      console.log(e);
+      _this3.user = e.user;
+      axios.post('/saveToSession', {
+        chat: _this3.chat
+      }).then(function (response) {
+        console.log(response);
+        console.log('session save');
+      })["catch"](function (error) {
+        console.log(error);
+      });
     }).listenForWhisper('typing', function (e) {
-      if (e.name != '') {
-        _this.typing = 'typing...';
+      if (e.message != '') {
+        if (_this3.user == undefined) {
+          _this3.typing = 'someone is typing...';
+        } else {
+          _this3.typing = _this3.user + ' is typing...';
+        }
       } else {
-        _this.typing = '';
+        _this3.typing = '';
       }
     });
     Echo.join('chat').here(function (users) {
-      //console.log(users);
-      _this.numberOfUsers = users.length;
+      _this3.numberOfUsers = users.length;
     }).joining(function (user) {
-      // console.log(user.name);
-      // console.log('join');
-      _this.numberOfUsers += 1;
+      _this3.numberOfUsers += 1;
 
-      _this.$toaster.success(user.name + ' is joined the chat room.');
+      _this3.$toaster.success(user.name + ' is joined the chat room.');
     }).leaving(function (user) {
-      //console.log(user.name);
-      _this.numberOfUsers -= 1;
+      _this3.numberOfUsers -= 1;
 
-      _this.$toaster.success(user.name + ' is leaved the chat room.');
+      _this3.$toaster.success(user.name + ' is leaved the chat room.');
     });
   }
 });

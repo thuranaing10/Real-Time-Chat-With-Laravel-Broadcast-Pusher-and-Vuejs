@@ -24,9 +24,10 @@
                     <message-component v-for="(message,index) in chat.message" :key = "index" :color="chat.color[index]" :user="chat.user[index]" :time="chat.time[index]">
                         @{{ message }}
                     </message-component>
-
                 </ul>
                 <input type="text" v-model="message" v-on:keyup.enter="send()" class="form-contrl col-12" placeholder="Type your message here...">
+                <br><br>
+                <a href="" class="btn btn-sm btn-danger" @click.prevent="deleteSession()">Delete</a>
             </div>
         </div>
     </div>
