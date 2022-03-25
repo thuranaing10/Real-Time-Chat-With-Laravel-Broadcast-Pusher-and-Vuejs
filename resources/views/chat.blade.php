@@ -18,7 +18,7 @@
     <div class="container">
         <div class="row" id="app">
             <div class="col-4 offset-4 offset-sm-1 col-sm-10">
-                <li class="list-group-item active">Chat Room</li>
+                <li class="list-group-item active">Chat Room <span class="badge badge-danger"> @{{ numberOfUsers }} </span></li>
                 <div class="badge badge-pill badge-primary" v-if="typing"> @{{ typing }} </div>
                 <ul class="list-group" v-chat-scroll>
                     <message-component v-for="(message,index) in chat.message" :key = "index" :color="chat.color[index]" :user="chat.user[index]" :time="chat.time[index]">

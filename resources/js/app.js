@@ -9,7 +9,14 @@ import VueChatScroll from 'vue-chat-scroll';
 
 window.Vue = require('vue');
 
+import Vue from 'vue'
+
 Vue.use(VueChatScroll);
+
+import Toaster from 'v-toaster'
+
+import 'v-toaster/dist/v-toaster.css'
+Vue.use(Toaster, {timeout: 5000})
 
 /**
  * The following block of code may be used to automatically register your
@@ -41,7 +48,8 @@ const app = new Vue({
             color: [],
             time: []
         },
-        typing: ""
+        typing: "",
+        numberOfUsers: 0,
     },
     watch:{
         message(){
@@ -93,16 +101,21 @@ const app = new Vue({
             }
         });
 
-        Echo.join(`chat`)
+        Echo.join('chat')
         .here((users) => {
-            //
+            //console.log(users);
+            this.numberOfUsers = users.length;
         })
         .joining((user) => {
-            console.log(user.name);
-            console.log('join');
+            // console.log(user.name);
+            // console.log('join');
+            this.numberOfUsers += 1;
+            this.$toaster.success(user.name + ' is joined the chat room.')
         })
         .leaving((user) => {
-            console.log(user.name);
+            //console.log(user.name);
+            this.numberOfUsers -= 1;
+            this.$toaster.success(user.name + ' is leaved the chat room.')
         });
     }
 });
